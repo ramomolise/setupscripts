@@ -1,2 +1,2 @@
 # setupscripts
- Useful Bash Setup Scripts
+ A collection of Useful Bash Setup Scripts
