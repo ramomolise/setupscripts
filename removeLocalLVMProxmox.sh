@@ -5,3 +5,5 @@ lvresize -l +100%FREE /dev/pve/root
 resize2fs /dev/mapper/pve-root
 
 echo "'local' has been resized"
+
+pause
