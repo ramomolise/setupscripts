@@ -8,7 +8,7 @@ To use these setup scripts and Docker Compose setups, follow the instructions be
 
 1. **Clone the Repository**: Clone this repository to your local machine using the following command:
     ```bash
-    git clone https://github.com/your-username/setupscripts.git
+    git clone https://github.com/ramomolise/setupscripts.git
     ```
 
 2. **Navigate to the Desired Setup**: Navigate to the directory containing the setup script or Docker Compose setup you wish to use.
