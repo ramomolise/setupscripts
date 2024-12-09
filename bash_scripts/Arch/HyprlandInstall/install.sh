@@ -12,31 +12,11 @@ if ! command -v paru &> /dev/null; then
     rm -rf paru
 fi
 
-# Read Dependencies from file for AUR
-DEPENDENCIES_FILE2="dependenciesAUR.txt"
-
-if [ -f "$DEPENDENCIES_FILE2" ]; then
-    mapfile -t dependenciesaur < "DEPENDENCIES_FILE2"
-else
-    echo "AUR Dependencies file not found!"
-    exit 1
-fi
-
 # Install dependencies via paru
-sudo paru -S --noconfirm "${dependenciesaur[@]}"
-
-# Read Dependencies from file
-DEPENDENCIES_FILE="dependencies.txt"
-
-if [ -f "$DEPENDENCIES_FILE" ]; then
-    mapfile -t dependencies < "DEPENDENCIES_FILE"
-else
-    echo "Dependencies file not found!"
-    exit 1
-fi
+sudo paru -S --noconfirm hyprland hyprpaper hyprshot brillo waybar
 
 # Install dependencies via pacman
-sudo pacman -S --noconfirm "${dependencies[@]}"
+sudo pacman -S --noconfirm pavucontrol networkmanager bluez bluez-utils acpi firefox
 
 # Get custom dotfiles and move to .config
 cd ~
