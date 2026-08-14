@@ -1,0 +1,38 @@
+# Hyprland and session services
+hyprland
+hyprpaper
+hypridle
+hyprlock
+hyprpolkitagent
+xdg-desktop-portal
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+
+# Desktop tools
+waybar
+wofi
+kitty
+thunar
+firefox
+dunst
+grim
+slurp
+wl-clipboard
+brightnessctl
+playerctl
+
+# Audio and networking
+pipewire
+pipewire-pulse
+wireplumber
+pavucontrol
+networkmanager
+network-manager-applet
+bluez
+bluez-utils
+
+# Wallpaper and fonts
+librsvg
+ttf-jetbrains-mono
+ttf-dejavu
+ttf-font-awesome

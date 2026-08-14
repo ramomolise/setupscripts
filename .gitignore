@@ -1,0 +1,7 @@
+*.backup
+*.log
+*.tmp
+.runtime/
+reports/
+__pycache__/
+*.pyc

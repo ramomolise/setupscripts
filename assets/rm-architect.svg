@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="2160" viewBox="0 0 3840 2160">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0" stop-color="#4d2575" stop-opacity="0.42"/>
+      <stop offset="0.55" stop-color="#1b1225" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#09090d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f3f3f7"/>
+      <stop offset="0.55" stop-color="#b8b5c0"/>
+      <stop offset="1" stop-color="#7f46b5"/>
+    </linearGradient>
+    <pattern id="grid" width="72" height="72" patternUnits="userSpaceOnUse">
+      <path d="M72 0H0V72" fill="none" stroke="#d8d5df" stroke-opacity="0.035" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="3840" height="2160" fill="#09090d"/>
+  <rect width="3840" height="2160" fill="url(#glow)"/>
+  <rect width="3840" height="2160" fill="url(#grid)"/>
+  <g transform="translate(320 1575)">
+    <rect x="0" y="-310" width="10" height="310" rx="5" fill="#6f3aa1"/>
+    <text x="70" y="-165" fill="url(#mark)" font-family="Montserrat, DejaVu Sans, sans-serif" font-size="176" font-weight="600" letter-spacing="20">RAMO MOLISE</text>
+    <text x="78" y="-68" fill="#a7a4ae" font-family="Montserrat, DejaVu Sans, sans-serif" font-size="42" font-weight="400" letter-spacing="17">PTY LTD</text>
+    <text x="78" y="24" fill="#7f46b5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace" font-size="30" letter-spacing="8">RM ARCHITECT // SYSTEM WORKSPACE</text>
+  </g>
+  <text x="3520" y="1940" text-anchor="end" fill="#c8c5ce" fill-opacity="0.35" font-family="JetBrains Mono, DejaVu Sans Mono, monospace" font-size="25" letter-spacing="6">BUILD • REFINE • REPEAT</text>
+</svg>

@@ -1,5 +1,0 @@
-pavucontrol
-networkmanager
-bluez
-bluez-utils
-acpi

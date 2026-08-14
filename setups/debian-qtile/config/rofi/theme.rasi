@@ -1,0 +1,55 @@
+* {
+  background: #0d0c12f2;
+  background-alt: #1d1a24ee;
+  foreground: #e8e6ec;
+  muted: #918d99;
+  accent: #75429f;
+  selected: #593177;
+  border-color: #75429f;
+}
+
+window {
+  width: 42%;
+  border: 2px;
+  border-radius: 12px;
+  border-color: @border-color;
+  background-color: @background;
+  padding: 12px;
+}
+
+mainbox { spacing: 10px; }
+
+inputbar {
+  padding: 12px;
+  border-radius: 8px;
+  background-color: @background-alt;
+  children: [prompt, entry];
+}
+
+prompt {
+  text-color: @accent;
+  padding: 0 10px 0 0;
+}
+
+entry { text-color: @foreground; }
+
+listview {
+  lines: 8;
+  columns: 1;
+  spacing: 4px;
+  scrollbar: false;
+}
+
+element {
+  padding: 10px;
+  border-radius: 7px;
+  background-color: transparent;
+  text-color: @foreground;
+}
+
+element selected {
+  background-color: @selected;
+  text-color: #ffffff;
+}
+
+element-icon { size: 24px; margin: 0 10px 0 0; }

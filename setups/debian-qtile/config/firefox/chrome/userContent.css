@@ -1,0 +1,16 @@
+@-moz-document url-prefix("about:home"), url-prefix("about:newtab"), url-prefix("about:blank") {
+  :root,
+  body,
+  .activity-stream,
+  .outer-wrapper,
+  .body-wrapper {
+    background: #0b0a0f !important;
+    color: #e8e6ec !important;
+  }
+
+  .search-wrapper .search-handoff-button,
+  .top-site-outer .tile {
+    background: rgba(38, 32, 47, 0.9) !important;
+    color: #e8e6ec !important;
+  }
+}

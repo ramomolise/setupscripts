@@ -1,5 +1,0 @@
-hyprland
-hyprpaper
-hyprshot
-brillo
-waybar
