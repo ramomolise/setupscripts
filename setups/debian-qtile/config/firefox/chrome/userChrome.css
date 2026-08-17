@@ -1,0 +1,45 @@
+:root {
+  --rm-bg: rgba(10, 9, 14, 0.82);
+  --rm-surface: rgba(27, 24, 34, 0.88);
+  --rm-purple: #75429f;
+  --rm-text: #ebe9ef;
+}
+
+#main-window,
+#navigator-toolbox,
+#TabsToolbar,
+#nav-bar,
+#PersonalToolbar,
+#sidebar-box,
+#browser {
+  background-color: var(--rm-bg) !important;
+  color: var(--rm-text) !important;
+  background-image: none !important;
+}
+
+#navigator-toolbox {
+  border-bottom: 1px solid color-mix(in srgb, var(--rm-purple) 65%, transparent) !important;
+}
+
+.tab-background {
+  background: transparent !important;
+  border-radius: 8px !important;
+  margin-block: 4px !important;
+}
+
+.tabbrowser-tab[selected] .tab-background {
+  background: color-mix(in srgb, var(--rm-purple) 58%, transparent) !important;
+}
+
+#urlbar-background,
+#searchbar {
+  background: var(--rm-surface) !important;
+  border: 1px solid rgba(141, 93, 181, 0.45) !important;
+  border-radius: 9px !important;
+}
+
+menupopup,
+panel {
+  --panel-background: rgba(20, 17, 27, 0.96) !important;
+  --panel-color: var(--rm-text) !important;
+}

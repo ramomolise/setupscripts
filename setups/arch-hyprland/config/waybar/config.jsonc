@@ -1,0 +1,46 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 36,
+  "spacing": 6,
+  "modules-left": ["custom/brand", "hyprland/workspaces", "hyprland/window"],
+  "modules-center": ["clock"],
+  "modules-right": ["network", "pulseaudio", "cpu", "memory", "battery", "tray"],
+
+  "custom/brand": {
+    "format": "RM ARCHITECT",
+    "tooltip": false
+  },
+  "hyprland/workspaces": {
+    "on-click": "activate",
+    "format": "{name}",
+    "persistent-workspaces": {"*": 5}
+  },
+  "hyprland/window": {
+    "format": "{title}",
+    "max-length": 48
+  },
+  "clock": {
+    "format": "{:%a %d %b  %H:%M}",
+    "tooltip-format": "<tt>{calendar}</tt>"
+  },
+  "network": {
+    "format-wifi": "Wi-Fi {signalStrength}%",
+    "format-ethernet": "Ethernet",
+    "format-disconnected": "Offline",
+    "tooltip-format": "{ifname}: {ipaddr}"
+  },
+  "pulseaudio": {
+    "format": "VOL {volume}%",
+    "format-muted": "MUTED",
+    "on-click": "pavucontrol"
+  },
+  "cpu": {"format": "CPU {usage}%", "interval": 3},
+  "memory": {"format": "RAM {percentage}%", "interval": 3},
+  "battery": {
+    "format": "BAT {capacity}%",
+    "format-charging": "CHG {capacity}%",
+    "states": {"warning": 25, "critical": 10}
+  },
+  "tray": {"spacing": 8}
+}
