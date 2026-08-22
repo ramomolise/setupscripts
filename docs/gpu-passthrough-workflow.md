@@ -93,8 +93,12 @@ sudo ./scripts/proxmox/install-gpu-passthrough-switch.sh \
 Deploy the updated Qtile config as the desktop user, then reload Qtile:
 
 ```bash
+sudo apt-get install libnotify-bin
 ./setups/debian-qtile/install.sh --no-packages --skip-firefox
 ```
+
+`libnotify-bin` supplies `notify-send`, which lets the background switch report a
+failure through Dunst before any login-session restart.
 
 The system installer creates a narrow passwordless sudo rule. It permits only a
 read-only short status command and the fixed no-argument systemd toggle request;
