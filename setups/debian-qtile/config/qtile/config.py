@@ -26,6 +26,13 @@ keys = [
     Key([mod], "space", lazy.spawn("rofi -show drun"), desc="Open launcher"),
     Key([mod], "e", lazy.spawn("thunar"), desc="Open file manager"),
     Key([mod], "b", lazy.spawn("firefox-esr"), desc="Open browser"),
+    Key([mod], "g", lazy.spawn("steam-nvidia"), desc="Open Steam on NVIDIA"),
+    Key(
+        [mod, "shift"],
+        "g",
+        lazy.spawn("gpu-passthrough-toggle"),
+        desc="Toggle NVIDIA between Windows VM and host",
+    ),
     Key([mod], "h", lazy.layout.left(), desc="Focus left"),
     Key([mod], "l", lazy.layout.right(), desc="Focus right"),
     Key([mod], "j", lazy.layout.down(), desc="Focus down"),

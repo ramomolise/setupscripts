@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 
-.PHONY: check syntax secrets
+.PHONY: check syntax secrets tests
 
-check: syntax secrets
+check: syntax secrets tests
 	@if command -v shellcheck >/dev/null 2>&1; then \
 		find . -type f -name '*.sh' -not -path './.git/*' -print0 | \
 			xargs -0 shellcheck --external-sources; \
@@ -18,3 +18,6 @@ syntax:
 
 secrets:
 	@bash scripts/check-secrets.sh
+
+tests:
+	@bash tests/gpu-passthrough-switch.sh

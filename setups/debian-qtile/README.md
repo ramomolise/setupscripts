@@ -30,12 +30,27 @@ Existing configuration and Firefox chrome directories are backed up under:
 ~/.local/state/rm-architect/backups/<timestamp>/
 ```
 
-The installer does not modify Proxmox networking, storage, repositories,
+The desktop installer does not modify Proxmox networking, storage, repositories,
 bootloader, kernel parameters, or GPU passthrough configuration.
 
 After installation, log out and select **Qtile** from the display-manager
 session menu. If Firefox has never been opened, launch it once and rerun with
 `--no-packages` so its profile can be styled.
+
+## Optional RTX 3090 / Windows VM toggle
+
+`Super + Shift + G` calls a separately installed, guarded Proxmox GPU switch.
+It is inert until the system component is explicitly installed with a real VM
+ID. Read the complete prerequisites and failure boundaries first:
+
+- [Live GPU passthrough switch](../../docs/gpu-passthrough-workflow.md)
+
+The switch restarts the X11 login session in both directions. This is required
+so Xorg can discover or release the hot-rebound NVIDIA GPU without rebooting the
+entire host. Save open work before confirming the Rofi prompt.
+
+`Super + G` launches Steam with NVIDIA PRIME render-offload variables. Keep the
+monitor on the Ryzen iGPU output for the reliable no-HDMI-swap layout.
 
 ## Main shortcuts
 
@@ -45,6 +60,8 @@ session menu. If Firefox has never been opened, launch it once and rerun with
 | `Super + Space` | Rofi launcher |
 | `Super + E` | Thunar file manager |
 | `Super + B` | Firefox ESR |
+| `Super + G` | Steam using NVIDIA PRIME |
+| `Super + Shift + G` | Confirm GPU/VM mode toggle |
 | `Super + H/J/K/L` | Move focus |
 | `Super + Shift + H/J/K/L` | Move window |
 | `Super + Ctrl + H/L` | Resize layout |

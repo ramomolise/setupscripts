@@ -1,0 +1,11 @@
+[Unit]
+Description=Toggle NVIDIA GPU between Proxmox VM and Linux host
+Wants=pve-cluster.service
+After=pve-cluster.service
+ConditionPathExists=/etc/gpu-passthrough-switch.conf
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/gpu-passthrough-switch toggle
+TimeoutStartSec=300
+
