@@ -117,6 +117,33 @@ starts the Windows VM, and restores the iGPU login screen.
 The existing boot-time VFIO configuration remains the final authority at cold
 boot, before Proxmox autostarts Windows.
 
+### Power-cut recovery
+
+A power cut cannot run any shutdown service. The recovery therefore happens on
+the next boot: `gpu-passthrough-boot.service` binds both RTX functions to VFIO
+before `pve-guests.service` can autostart the Windows VM. A Proxmox service
+drop-in makes this fail closed: if VFIO recovery fails, guest autostart does not
+continue with the GPU in an unknown state.
+
+Linux PCI `driver_override` state does not survive a cold boot, so switching to
+host/NVIDIA mode does not become the new boot default. The existing initramfs or
+kernel-command-line VFIO configuration remains a second recovery layer.
+
+This protects GPU ownership, not unwritten data. A power cut while Windows is
+running is still an abrupt guest power loss; a UPS is the only dependable answer
+for that failure.
+
+### Physical power button
+
+The installer adds a `systemd-logind` drop-in setting a normal short power-button
+press to `poweroff`. It continues to respect shutdown inhibitors. That request
+uses the normal systemd/Proxmox shutdown path, so guests shut down and the guard
+returns the RTX to VFIO before power is removed.
+
+Holding the button until the motherboard forces power off, switching off the
+wall socket, or losing utility power bypasses all software hooks. Those cases
+use the next-boot recovery above.
+
 ## Verify
 
 Check the current owner and guest state:
@@ -162,16 +189,20 @@ boot-time VFIO path and the Windows autostart behaviour.
 
 ## Remove
 
-Disable the power hooks before removing their files:
+Disable the power hooks before removing their files. Do not add `--now`: stopping
+the active guard intentionally runs its VFIO shutdown action.
 
 ```bash
-sudo systemctl disable --now \
+sudo systemctl disable \
+  gpu-passthrough-boot.service \
   gpu-passthrough-guard.service \
   gpu-passthrough-sleep.service
 ```
 
 Then remove the installed units, commands, configuration, and the dedicated
-`/etc/sudoers.d/gpu-passthrough-switch` file, followed by:
+`/etc/sudoers.d/gpu-passthrough-switch` file. Also remove the dedicated
+`pve-guests.service.d/50-gpu-passthrough-switch.conf` and
+`logind.conf.d/80-gpu-passthrough-power-key.conf` drop-ins, followed by:
 
 ```bash
 sudo systemctl daemon-reload
@@ -183,6 +214,8 @@ rollback to the existing host-specific configuration.
 ## Primary references
 
 - [Proxmox `qm(1)` manual](https://pve.proxmox.com/pve-docs/qm.1.html)
+- [Proxmox automatic guest start and shutdown](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#chapter_system_administration)
 - [systemd sleep target ordering](https://www.freedesktop.org/software/systemd/man/latest/systemd.special.html#sleep.target)
+- [systemd-logind power-key configuration](https://www.freedesktop.org/software/systemd/man/latest/logind.conf.html)
 - [NVIDIA PRIME Render Offload](https://download.nvidia.com/XFree86/Linux-x86_64/575.64/README/primerenderoffload.html)
 - [NVIDIA RandR display offload](https://download.nvidia.com/XFree86/Linux-x86_64/575.64/README/randr14.html)

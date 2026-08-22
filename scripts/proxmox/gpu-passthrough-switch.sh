@@ -46,6 +46,7 @@ cleanup() {
 load_config() {
     [[ -r "$CONFIG_FILE" ]] || die "Configuration not found: $CONFIG_FILE"
     VMID=''
+    DESKTOP_USER=''
     GPU_PCI=''
     AUDIO_PCI=''
     SHUTDOWN_TIMEOUT=180
@@ -56,6 +57,7 @@ load_config() {
     source "$CONFIG_FILE"
 
     : "${VMID:?VMID is not set in $CONFIG_FILE}"
+    : "${DESKTOP_USER:?DESKTOP_USER is not set in $CONFIG_FILE}"
     : "${GPU_PCI:?GPU_PCI is not set in $CONFIG_FILE}"
     : "${AUDIO_PCI:?AUDIO_PCI is not set in $CONFIG_FILE}"
 
@@ -202,6 +204,12 @@ start_display_manager() {
     fi
 }
 
+stop_desktop_user_services() {
+    local user_id
+    user_id=$(id -u "$DESKTOP_USER" 2>/dev/null) || return 0
+    systemctl stop "user@${user_id}.service" >/dev/null 2>&1 || true
+}
+
 bind_to_host() {
     log "Binding $GPU_PCI to nvidia and $AUDIO_PCI to snd_hda_intel."
     bind_device "$GPU_PCI" nvidia
@@ -247,6 +255,7 @@ switch_to_vm() {
     shutdown_vm
     assert_no_gpu_workloads
     stop_display_manager
+    stop_desktop_user_services
     systemctl stop nvidia-persistenced.service >/dev/null 2>&1 || true
     assert_no_device_users
     bind_to_vfio
@@ -267,9 +276,24 @@ prepare_sleep() {
     fi
 
     stop_display_manager
+    stop_desktop_user_services
     bind_to_vfio
     write_state vm-sleep
     log 'GPU is safely bound to VFIO for host sleep.'
+}
+
+prepare_boot() {
+    local guest
+    guest=$(vm_state)
+    [[ $guest == stopped ]] || die "Boot recovery refused because VM $VMID is $guest."
+    if systemctl is-active --quiet display-manager.service; then
+        die 'Boot recovery refused because the display manager is already active.'
+    fi
+
+    write_state switching-boot
+    bind_to_vfio
+    write_state vm-boot
+    log 'Boot recovery confirmed the GPU is bound to VFIO before guest autostart.'
 }
 
 resume_from_sleep() {
@@ -297,6 +321,7 @@ prepare_shutdown() {
     write_state switching-poweroff
     shutdown_vm
     stop_display_manager
+    stop_desktop_user_services
     keep_display_manager_stopped=true
     bind_to_vfio
     write_state vm-poweroff
@@ -349,8 +374,9 @@ main() {
             ;;
         prepare-sleep) prepare_sleep ;;
         resume) resume_from_sleep ;;
+        prepare-boot) prepare_boot ;;
         prepare-shutdown) prepare_shutdown ;;
-        *) die 'Usage: gpu-passthrough-switch {status [--short]|host|vm|toggle|prepare-sleep|resume|prepare-shutdown}' ;;
+        *) die 'Usage: gpu-passthrough-switch {status [--short]|host|vm|toggle|prepare-boot|prepare-sleep|resume|prepare-shutdown}' ;;
     esac
 }
 

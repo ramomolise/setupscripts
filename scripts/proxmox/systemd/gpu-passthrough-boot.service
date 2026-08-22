@@ -1,0 +1,15 @@
+[Unit]
+Description=Recover NVIDIA GPU to VFIO before Proxmox guest autostart
+Wants=pve-cluster.service
+After=local-fs.target systemd-modules-load.service pve-cluster.service
+Before=pve-guests.service display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/gpu-passthrough-switch prepare-boot
+RemainAfterExit=yes
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
+

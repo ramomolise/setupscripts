@@ -17,6 +17,7 @@ assert_events() {
 }
 
 export VMID=101
+export DESKTOP_USER=ramo
 export SHUTDOWN_TIMEOUT=180
 
 original_shutdown_vm=$(declare -f shutdown_vm)
@@ -25,6 +26,7 @@ log() { :; }
 write_state() { events+=("state:$1"); }
 shutdown_vm() { events+=(shutdown-vm); }
 stop_display_manager() { events+=(stop-display-manager); }
+stop_desktop_user_services() { events+=(stop-user-services); }
 bind_to_host() { events+=(bind-host); }
 start_display_manager() { events+=(start-display-manager); }
 
@@ -39,7 +41,17 @@ start_vm() { events+=(start-vm); }
 systemctl() { events+=("systemctl:$*"); }
 
 switch_to_vm
-assert_events $'state:switching-vm\nshutdown-vm\ncheck-workloads\nstop-display-manager\nsystemctl:stop nvidia-persistenced.service\ncheck-device-users\nbind-vfio\nstart-vm\nstart-display-manager\nstate:vm'
+assert_events $'state:switching-vm\nshutdown-vm\ncheck-workloads\nstop-display-manager\nstop-user-services\nsystemctl:stop nvidia-persistenced.service\ncheck-device-users\nbind-vfio\nstart-vm\nstart-display-manager\nstate:vm'
+
+events=()
+vm_state() { printf '%s\n' stopped; }
+systemctl() {
+    [[ $1 == is-active ]] && return 1
+    events+=("systemctl:$*")
+}
+
+prepare_boot
+assert_events $'state:switching-boot\nbind-vfio\nstate:vm-boot'
 
 mock_vm_state=running
 qm_arguments=''

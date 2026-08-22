@@ -108,8 +108,15 @@ install -m 0755 "$script_dir/gpu-passthrough-request-toggle.sh" /usr/local/sbin/
 install -m 0755 "$script_dir/gpu-passthrough-toggle.sh" /usr/local/bin/gpu-passthrough-toggle
 install -m 0755 "$script_dir/steam-nvidia.sh" /usr/local/bin/steam-nvidia
 install -m 0644 "$unit_dir/gpu-passthrough-toggle.service" /etc/systemd/system/gpu-passthrough-toggle.service
+install -m 0644 "$unit_dir/gpu-passthrough-boot.service" /etc/systemd/system/gpu-passthrough-boot.service
 install -m 0644 "$unit_dir/gpu-passthrough-guard.service" /etc/systemd/system/gpu-passthrough-guard.service
 install -m 0644 "$unit_dir/gpu-passthrough-sleep.service" /etc/systemd/system/gpu-passthrough-sleep.service
+install -d -m 0755 /etc/systemd/system/pve-guests.service.d
+install -m 0644 "$unit_dir/pve-guests-gpu-passthrough.conf" \
+    /etc/systemd/system/pve-guests.service.d/50-gpu-passthrough-switch.conf
+install -d -m 0755 /etc/systemd/logind.conf.d
+install -m 0644 "$script_dir/logind/80-gpu-passthrough-power-key.conf" \
+    /etc/systemd/logind.conf.d/80-gpu-passthrough-power-key.conf
 
 config_tmp=$(mktemp)
 sudoers_tmp=$(mktemp)
@@ -136,6 +143,7 @@ install -o root -g root -m 0440 "$sudoers_tmp" /etc/sudoers.d/gpu-passthrough-sw
 
 systemctl daemon-reload
 systemctl enable --now gpu-passthrough-guard.service
+systemctl enable gpu-passthrough-boot.service
 systemctl enable gpu-passthrough-sleep.service
 
 printf '\n%s\n' 'GPU passthrough switch installed.'
@@ -144,4 +152,5 @@ printf 'Qtile user: %s\nVM ID: %s\nGPU: %s\nAudio: %s\n' \
 printf '%s\n' \
     'Reload the repository Qtile config, then use Super+Shift+G to toggle.' \
     'The first live switch should be done with no unsaved desktop work.' \
+    'The power-button policy and boot recovery are fully active after the next reboot.' \
     'Check status with: sudo gpu-passthrough-switch status'
