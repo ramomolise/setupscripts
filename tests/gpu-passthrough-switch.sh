@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-# shellcheck source=../scripts/proxmox/gpu-passthrough-switch.sh
+# shellcheck source=scripts/proxmox/gpu-passthrough-switch.sh
 source "$script_dir/../scripts/proxmox/gpu-passthrough-switch.sh"
 
 fail() {
@@ -16,12 +16,8 @@ assert_events() {
     [[ $actual == "$expected" ]] || fail "Unexpected sequence:\n$actual"
 }
 
-VMID=101
-GPU_PCI=0000:01:00.0
-AUDIO_PCI=0000:01:00.1
-SHUTDOWN_TIMEOUT=180
-MANAGE_DISPLAY_MANAGER=true
-START_VM_AFTER_RESUME=true
+export VMID=101
+export SHUTDOWN_TIMEOUT=180
 
 original_shutdown_vm=$(declare -f shutdown_vm)
 events=()
