@@ -104,6 +104,13 @@ The system installer creates a narrow passwordless sudo rule. It permits only a
 read-only short status command and the fixed no-argument systemd toggle request;
 it does not grant passwordless `qm`, `systemctl`, or an arbitrary shell.
 
+The installer also adds dedicated condition drop-ins for NVIDIA's
+`nvidia-persistenced`, `nvidia-powerd`, suspend, hibernate, and resume services.
+While `/etc/gpu-passthrough-switch.conf` exists, systemd skips those vendor
+units so they cannot claim the RTX or race the switch's own sleep handling. The
+vendor units are not masked and become eligible to run again if the switch
+configuration and its dedicated drop-ins are removed.
+
 ## Power-state rule
 
 `gpu-passthrough-guard.service` runs after the display manager and Proxmox guest
@@ -202,7 +209,18 @@ sudo systemctl disable \
 Then remove the installed units, commands, configuration, and the dedicated
 `/etc/sudoers.d/gpu-passthrough-switch` file. Also remove the dedicated
 `pve-guests.service.d/50-gpu-passthrough-switch.conf` and
-`logind.conf.d/80-gpu-passthrough-power-key.conf` drop-ins, followed by:
+`logind.conf.d/80-gpu-passthrough-power-key.conf` drop-ins. Remove each
+`50-gpu-passthrough-switch.conf` installed under these directories as well:
+
+```text
+/etc/systemd/system/nvidia-persistenced.service.d/
+/etc/systemd/system/nvidia-powerd.service.d/
+/etc/systemd/system/nvidia-suspend.service.d/
+/etc/systemd/system/nvidia-hibernate.service.d/
+/etc/systemd/system/nvidia-resume.service.d/
+```
+
+Then reload systemd:
 
 ```bash
 sudo systemctl daemon-reload

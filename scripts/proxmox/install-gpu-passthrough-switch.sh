@@ -69,6 +69,14 @@ done
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 unit_dir="$script_dir/systemd"
+nvidia_condition_template="$unit_dir/nvidia-gpu-passthrough.conf"
+nvidia_units=(
+    nvidia-persistenced.service
+    nvidia-powerd.service
+    nvidia-suspend.service
+    nvidia-hibernate.service
+    nvidia-resume.service
+)
 
 for command_name in qm systemctl modinfo lspci install visudo getent; do
     command -v "$command_name" >/dev/null 2>&1 || die "Required command not found: $command_name"
@@ -117,6 +125,11 @@ install -m 0644 "$unit_dir/pve-guests-gpu-passthrough.conf" \
 install -d -m 0755 /etc/systemd/logind.conf.d
 install -m 0644 "$script_dir/logind/80-gpu-passthrough-power-key.conf" \
     /etc/systemd/logind.conf.d/80-gpu-passthrough-power-key.conf
+for nvidia_unit in "${nvidia_units[@]}"; do
+    install -d -m 0755 "/etc/systemd/system/${nvidia_unit}.d"
+    install -m 0644 "$nvidia_condition_template" \
+        "/etc/systemd/system/${nvidia_unit}.d/50-gpu-passthrough-switch.conf"
+done
 
 config_tmp=$(mktemp)
 sudoers_tmp=$(mktemp)
@@ -142,6 +155,7 @@ visudo -cf "$sudoers_tmp" >/dev/null
 install -o root -g root -m 0440 "$sudoers_tmp" /etc/sudoers.d/gpu-passthrough-switch
 
 systemctl daemon-reload
+systemctl stop nvidia-persistenced.service nvidia-powerd.service >/dev/null 2>&1 || true
 systemctl enable --now gpu-passthrough-guard.service
 systemctl enable gpu-passthrough-boot.service
 systemctl enable gpu-passthrough-sleep.service

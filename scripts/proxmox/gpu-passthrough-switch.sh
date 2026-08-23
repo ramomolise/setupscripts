@@ -210,6 +210,12 @@ stop_desktop_user_services() {
     systemctl stop "user@${user_id}.service" >/dev/null 2>&1 || true
 }
 
+stop_nvidia_background_services() {
+    systemctl stop \
+        nvidia-persistenced.service \
+        nvidia-powerd.service >/dev/null 2>&1 || true
+}
+
 bind_to_host() {
     log "Binding $GPU_PCI to nvidia and $AUDIO_PCI to snd_hda_intel."
     bind_device "$GPU_PCI" nvidia
@@ -229,7 +235,7 @@ bind_to_host() {
 
 bind_to_vfio() {
     log "Binding $GPU_PCI and $AUDIO_PCI to vfio-pci."
-    systemctl stop nvidia-persistenced.service >/dev/null 2>&1 || true
+    stop_nvidia_background_services
 
     if [[ $(current_driver "$GPU_PCI") == nvidia ]]; then
         modprobe -r nvidia_drm nvidia_uvm nvidia_modeset nvidia || \
@@ -256,7 +262,7 @@ switch_to_vm() {
     assert_no_gpu_workloads
     stop_display_manager
     stop_desktop_user_services
-    systemctl stop nvidia-persistenced.service >/dev/null 2>&1 || true
+    stop_nvidia_background_services
     assert_no_device_users
     bind_to_vfio
     start_vm
