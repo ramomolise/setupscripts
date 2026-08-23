@@ -52,6 +52,7 @@ assert_events $'systemctl:stop nvidia-persistenced.service nvidia-powerd.service
 
 events=()
 vm_state() { printf '%s\n' stopped; }
+# shellcheck disable=SC2317
 systemctl() {
     [[ $1 == is-active ]] && return 1
     events+=("systemctl:$*")
@@ -85,7 +86,7 @@ for unit in \
     nvidia-resume.service; do
     grep -Fq "$unit" "$installer" || fail "Installer does not list $unit."
 done
-grep -Fq '/etc/systemd/system/${nvidia_unit}.d/50-gpu-passthrough-switch.conf' "$installer" || \
+grep -Fq "/etc/systemd/system/\${nvidia_unit}.d/50-gpu-passthrough-switch.conf" "$installer" || \
     fail 'Installer does not deploy NVIDIA condition drop-ins to the expected path.'
 grep -Fq 'systemctl stop nvidia-persistenced.service nvidia-powerd.service' "$installer" || \
     fail 'Installer does not stop both NVIDIA background services.'
