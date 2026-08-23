@@ -40,6 +40,7 @@ assert_no_gpu_workloads() { events+=(check-workloads); }
 assert_no_device_users() { events+=(check-device-users); }
 bind_to_vfio() { events+=(bind-vfio); }
 start_vm() { events+=(start-vm); }
+# shellcheck disable=SC2317
 systemctl() { events+=("systemctl:$*"); }
 
 switch_to_vm
@@ -52,7 +53,6 @@ assert_events $'systemctl:stop nvidia-persistenced.service nvidia-powerd.service
 
 events=()
 vm_state() { printf '%s\n' stopped; }
-# shellcheck disable=SC2317
 systemctl() {
     [[ $1 == is-active ]] && return 1
     events+=("systemctl:$*")
