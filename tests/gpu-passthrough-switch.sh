@@ -91,4 +91,85 @@ grep -Fq "/etc/systemd/system/\${nvidia_unit}.d/50-gpu-passthrough-switch.conf" 
 grep -Fq 'systemctl stop nvidia-persistenced.service nvidia-powerd.service' "$installer" || \
     fail 'Installer does not stop both NVIDIA background services.'
 
+grep -Fq -- '--close' "$script_dir/../scripts/proxmox/gpu-passthrough-switch.sh" || \
+    fail 'Lock wrapper does not close the descriptor for the executed action.'
+if grep -Eq 'exec[[:space:]]+9>' "$script_dir/../scripts/proxmox/gpu-passthrough-switch.sh"; then
+    fail 'Legacy inherited FD-9 locking pattern is still present.'
+fi
+
+lock_test_dir=$(mktemp -d)
+lock_test_pid=''
+cleanup_lock_test() {
+    if [[ -n $lock_test_pid ]]; then
+        kill "$lock_test_pid" 2>/dev/null || true
+        wait "$lock_test_pid" 2>/dev/null || true
+    fi
+    rm -rf "$lock_test_dir"
+}
+trap cleanup_lock_test EXIT
+
+lock_test_helper="$lock_test_dir/lock-helper.sh"
+cat >"$lock_test_helper" <<EOF
+#!/usr/bin/env bash
+set -Eeuo pipefail
+source "$script_dir/../scripts/proxmox/gpu-passthrough-switch.sh"
+load_config() { :; }
+require_root() { :; }
+cleanup() { :; }
+die() {
+    printf 'Error: %s\n' "\$*" >&2
+    exit 1
+}
+execute_action() {
+    if [[ -n \${GPU_SWITCH_LOCK_TEST_EXIT_CODE:-} ]]; then
+        return "\$GPU_SWITCH_LOCK_TEST_EXIT_CODE"
+    fi
+    sleep 2 &
+    child=\$!
+    inherited=false
+    for fd in /proc/\$child/fd/*; do
+        [[ \$(readlink "\$fd" 2>/dev/null || true) == "\$LOCK_FILE" ]] && inherited=true
+    done
+    printf '%s\n' "\$inherited" >"\$GPU_SWITCH_LOCK_TEST_RESULT"
+    : >"\$GPU_SWITCH_LOCK_TEST_READY"
+    wait "\$child"
+}
+trap cleanup EXIT
+main "\$@"
+EOF
+chmod +x "$lock_test_helper"
+
+export GPU_SWITCH_LOCK_FILE="$lock_test_dir/switch.lock"
+export GPU_SWITCH_LOCK_TEST_READY="$lock_test_dir/ready"
+export GPU_SWITCH_LOCK_TEST_RESULT="$lock_test_dir/inherited"
+"$lock_test_helper" vm >"$lock_test_dir/first.out" 2>"$lock_test_dir/first.err" &
+lock_test_pid=$!
+for ((attempt = 0; attempt < 100; attempt++)); do
+    [[ ! -e $GPU_SWITCH_LOCK_TEST_READY ]] || break
+    sleep 0.02
+done
+[[ -e $GPU_SWITCH_LOCK_TEST_READY ]] || fail 'Timed out waiting for locked child action.'
+[[ $(cat "$GPU_SWITCH_LOCK_TEST_RESULT") == false ]] || \
+    fail 'Child process inherited the GPU switch lock descriptor.'
+
+if "$lock_test_helper" vm >"$lock_test_dir/second.out" 2>"$lock_test_dir/second.err"; then
+    fail 'Concurrent GPU switch action was not refused.'
+fi
+grep -Fq 'Another GPU switch is already running.' "$lock_test_dir/second.err" || \
+    fail 'Concurrent action did not report genuine lock contention.'
+wait "$lock_test_pid" || fail 'Initial locked action failed.'
+lock_test_pid=''
+
+export GPU_SWITCH_LOCK_TEST_EXIT_CODE=42
+set +e
+"$lock_test_helper" vm >"$lock_test_dir/failure.out" 2>"$lock_test_dir/failure.err"
+action_exit_code=$?
+set -e
+unset GPU_SWITCH_LOCK_TEST_EXIT_CODE
+[[ $action_exit_code == 42 ]] || \
+    fail "Action failure status changed from 42 to $action_exit_code."
+
+trap - EXIT
+cleanup_lock_test
+
 printf '%s\n' 'GPU passthrough switch tests passed.'

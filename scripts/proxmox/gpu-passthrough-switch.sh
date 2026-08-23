@@ -2,7 +2,8 @@
 set -Eeuo pipefail
 
 readonly CONFIG_FILE=${GPU_SWITCH_CONFIG:-/etc/gpu-passthrough-switch.conf}
-readonly LOCK_FILE=/run/lock/gpu-passthrough-switch.lock
+readonly LOCK_FILE=${GPU_SWITCH_LOCK_FILE:-/run/lock/gpu-passthrough-switch.lock}
+readonly LOCK_CONFLICT_EXIT_CODE=75
 readonly STATE_FILE=/run/gpu-passthrough-switch.state
 readonly LAST_ERROR_FILE=/run/gpu-passthrough-switch.last-error
 readonly SLEEP_DISPLAY_MARKER=/run/gpu-passthrough-switch.display-manager
@@ -354,18 +355,9 @@ print_status() {
     fi
 }
 
-main() {
-    local action=${1:-status}
-    load_config
-    require_root
+execute_action() {
+    local action=$1
 
-    if [[ $action == status ]]; then
-        print_status "${2:-}"
-        return 0
-    fi
-
-    exec 9>"$LOCK_FILE"
-    flock -n 9 || die 'Another GPU switch is already running.'
     rm -f "$LAST_ERROR_FILE"
 
     case "$action" in
@@ -384,6 +376,48 @@ main() {
         prepare-shutdown) prepare_shutdown ;;
         *) die 'Usage: gpu-passthrough-switch {status [--short]|host|vm|toggle|prepare-boot|prepare-sleep|resume|prepare-shutdown}' ;;
     esac
+}
+
+run_action_under_lock() {
+    local exit_code
+
+    if flock \
+        --close \
+        --nonblock \
+        --conflict-exit-code "$LOCK_CONFLICT_EXIT_CODE" \
+        "$LOCK_FILE" "$0" --locked "$@"; then
+        return 0
+    else
+        exit_code=$?
+    fi
+
+    if ((exit_code == LOCK_CONFLICT_EXIT_CODE)); then
+        die 'Another GPU switch is already running.'
+    fi
+    return "$exit_code"
+}
+
+main() {
+    local action=${1:-status}
+
+    if [[ $action == --locked ]]; then
+        shift
+        action=${1:-}
+        load_config
+        require_root
+        execute_action "$action"
+        return
+    fi
+
+    load_config
+    require_root
+
+    if [[ $action == status ]]; then
+        print_status "${2:-}"
+        return 0
+    fi
+
+    run_action_under_lock "$@"
 }
 
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then

@@ -32,6 +32,14 @@ variables.
 No forced guest stop is used. If Windows does not shut down within the configured
 timeout, the switch fails and leaves the guest alone.
 
+Mutating actions are serialized by a non-blocking lock. The `flock` supervisor
+keeps that lock for the complete switch, but closes its lock descriptor before
+executing the switch script. As a result, `qm` and the QEMU, storage-daemon, and
+SWTPM processes it starts cannot inherit the descriptor and cannot keep the lock
+alive after the switch finishes. A concurrent request is refused with `Another
+GPU switch is already running`; other action failures retain their own exit
+status and error.
+
 ## Display cable reality
 
 The dependable no-cable-swap layout is to keep the monitor connected to the
