@@ -13,7 +13,7 @@ that job.
 
 | Setup | Target | Purpose |
 |---|---|---|
-| [RM Architect Qtile](setups/debian-qtile/README.md) | Debian 13 / Proxmox desktop | Qtile, Picom, Dunst, Rofi, Firefox styling, branded wallpaper, and 60% keyboard-friendly shortcuts |
+| [RM Architect Qtile](setups/debian-qtile/README.md) | Debian 13 / Proxmox desktop | Qtile, Picom, Dunst, Rofi, Firefox styling, branded wallpaper, 60% keyboard shortcuts, and an optional guarded RTX/VM toggle |
 | [Arch Hyprland](setups/arch-hyprland/README.md) | Native Arch Linux | Current Hyprland desktop using official repository packages and hardware-neutral defaults |
 | [Forge runtime](setups/forge-runtime/README.md) | Debian/Linux | Isolated Hermes/Ollama runtime, health checks, and optional public-profile hardening |
 
@@ -22,6 +22,7 @@ that job.
 | Script | What it does |
 |---|---|
 | [`scripts/proxmox/reclaim-local-lvm.sh`](scripts/proxmox/reclaim-local-lvm.sh) | On a new Proxmox installation, removes an empty `local-lvm` thin pool and gives the free space to the root filesystem |
+| [`scripts/proxmox/install-gpu-passthrough-switch.sh`](scripts/proxmox/install-gpu-passthrough-switch.sh) | Installs the guarded Qtile/Proxmox RTX switch, restricted sudo entry, power-button policy, and boot/shutdown/sleep VFIO recovery |
 | [`scripts/debian/hestia-install.sh`](scripts/debian/hestia-install.sh) | Interactive, validated HestiaCP installer that does not echo the admin password |
 | [`scripts/debian/hestia-roundcube-repair.sh`](scripts/debian/hestia-roundcube-repair.sh) | Backs up and repairs the narrow Roundcube permission case seen on HestiaCP |
 | [`scripts/ollama/configure-service.sh`](scripts/ollama/configure-service.sh) | Creates a backed-up systemd override for Ollama tuning and controlled network binding |
@@ -41,7 +42,8 @@ sharing it publicly.
 
 - **Read-only:** diagnostic and health-check tools.
 - **User configuration:** desktop installers; existing files are backed up.
-- **System configuration:** Hestia and Ollama tools; require root or `sudo`.
+- **System configuration:** Hestia, Ollama, and GPU-switch installers; require
+  root or `sudo` and validate their target first.
 - **Destructive:** Proxmox storage reclaim; refuses to run when it detects guest
   volumes and requires a typed confirmation.
 
@@ -68,7 +70,7 @@ configuration compilation, `git diff --check`, and ShellCheck when installed.
 
 - [Hestia/OCI recovery](docs/hestia-oci-recovery.md)
 - [Private Ollama access](docs/ollama-private-access.md)
-- [GPU passthrough workflow](docs/gpu-passthrough-workflow.md)
+- [Live GPU passthrough switch](docs/gpu-passthrough-workflow.md)
 
 ## Licence
 

@@ -1,0 +1,17 @@
+[Unit]
+Description=Return NVIDIA GPU to VFIO for host sleep and hibernation
+DefaultDependencies=no
+StopWhenUnneeded=yes
+After=pve-cluster.service
+Before=sleep.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/gpu-passthrough-switch prepare-sleep
+ExecStop=/usr/local/sbin/gpu-passthrough-switch resume
+TimeoutStartSec=300
+TimeoutStopSec=300
+
+[Install]
+RequiredBy=sleep.target
