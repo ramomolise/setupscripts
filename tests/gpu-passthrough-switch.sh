@@ -22,6 +22,8 @@ export SHUTDOWN_TIMEOUT=180
 
 original_shutdown_vm=$(declare -f shutdown_vm)
 original_stop_nvidia_background_services=$(declare -f stop_nvidia_background_services)
+original_preflight_host_driver=$(declare -f preflight_host_driver)
+original_rollback_failed_host_switch=$(declare -f rollback_failed_host_switch)
 events=()
 log() { :; }
 write_state() { events+=("state:$1"); }
@@ -29,17 +31,61 @@ shutdown_vm() { events+=(shutdown-vm); }
 stop_display_manager() { events+=(stop-display-manager); }
 stop_desktop_user_services() { events+=(stop-user-services); }
 stop_nvidia_background_services() { events+=(stop-nvidia-services); }
+preflight_host_driver() { events+=(preflight-host); }
 bind_to_host() { events+=(bind-host); }
 start_display_manager() { events+=(start-display-manager); }
 
 switch_to_host
-assert_events $'state:switching-host\nshutdown-vm\nstop-display-manager\nbind-host\nstart-display-manager\nstate:host'
+assert_events $'preflight-host\nstate:switching-host\nshutdown-vm\nstop-display-manager\nstart-display-manager\nstate:host'
+
+events=()
+preflight_host_driver() { events+=(preflight-host); return 1; }
+if switch_to_host; then
+    fail 'Host switch continued after its NVIDIA module preflight failed.'
+fi
+assert_events 'preflight-host'
+
+events=()
+preflight_host_driver() { events+=(preflight-host); }
+bind_to_host() { events+=(bind-host); return 1; }
+rollback_failed_host_switch() { events+=(rollback-host); }
+if switch_to_host; then
+    fail 'Host switch reported success after host binding failed.'
+fi
+assert_events $'preflight-host\nstate:switching-host\nshutdown-vm\nstop-display-manager\nrollback-host'
+
+events=()
+eval "$original_preflight_host_driver"
+running_kernel() { printf '%s\n' 7.0.0-test-pve; }
+command_exists() { return 0; }
+module_metadata_available() {
+    [[ $2 != nvidia_drm ]]
+}
+module_load_resolves() { return 0; }
+report_error() { events+=("error:$*"); }
+if preflight_host_driver; then
+    fail 'NVIDIA preflight accepted a missing running-kernel module.'
+fi
+assert_events 'error:NVIDIA module nvidia_drm is unavailable for the running kernel 7.0.0-test-pve. Install its matching kernel headers and rebuild NVIDIA DKMS before retrying; the VM and VFIO ownership were left unchanged.'
+
+events=()
+eval "$original_rollback_failed_host_switch"
+bind_to_vfio() { events+=(bind-vfio); }
+start_vm() { events+=(start-vm); }
+start_display_manager() { events+=(start-display-manager); }
+write_state() { events+=("state:$1"); }
+report_error() { events+=("error:$*"); }
+log() { :; }
+rollback_failed_host_switch
+assert_events $'bind-vfio\nstart-vm\nstart-display-manager\nstate:vm\nerror:Host switch failed: the NVIDIA host binding did not complete. Rollback completed; the GPU is back on VFIO and VM 101 is running.'
 
 events=()
 assert_no_gpu_workloads() { events+=(check-workloads); }
 assert_no_device_users() { events+=(check-device-users); }
 bind_to_vfio() { events+=(bind-vfio); }
 start_vm() { events+=(start-vm); }
+bind_to_host() { events+=(bind-host); }
+report_error() { :; }
 # shellcheck disable=SC2317
 systemctl() { events+=("systemctl:$*"); }
 
