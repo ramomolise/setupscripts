@@ -62,6 +62,7 @@ module_metadata_available() {
     [[ $2 != nvidia_drm ]]
 }
 module_load_resolves() { return 0; }
+# shellcheck disable=SC2317
 report_error() { events+=("error:$*"); }
 if preflight_host_driver; then
     fail 'NVIDIA preflight accepted a missing running-kernel module.'
@@ -70,10 +71,13 @@ assert_events 'error:NVIDIA module nvidia_drm is unavailable for the running ker
 
 events=()
 eval "$original_rollback_failed_host_switch"
+# shellcheck disable=SC2317
 bind_to_vfio() { events+=(bind-vfio); }
+# shellcheck disable=SC2317
 start_vm() { events+=(start-vm); }
 start_display_manager() { events+=(start-display-manager); }
 write_state() { events+=("state:$1"); }
+# shellcheck disable=SC2317
 report_error() { events+=("error:$*"); }
 log() { :; }
 rollback_failed_host_switch
