@@ -23,6 +23,7 @@ that job.
 |---|---|
 | [`scripts/proxmox/reclaim-local-lvm.sh`](scripts/proxmox/reclaim-local-lvm.sh) | On a new Proxmox installation, removes an empty `local-lvm` thin pool and gives the free space to the root filesystem |
 | [`scripts/proxmox/install-gpu-passthrough-switch.sh`](scripts/proxmox/install-gpu-passthrough-switch.sh) | Installs the guarded Qtile/Proxmox RTX switch, restricted sudo entry, power-button policy, and boot/shutdown/sleep VFIO recovery |
+| [`scripts/proxmox/repair-nvidia-dkms.sh`](scripts/proxmox/repair-nvidia-dkms.sh) | Diagnoses and narrowly repairs a missing NVIDIA DKMS module after a Debian/Proxmox kernel upgrade |
 | [`scripts/debian/hestia-install.sh`](scripts/debian/hestia-install.sh) | Interactive, validated HestiaCP installer that does not echo the admin password |
 | [`scripts/debian/hestia-roundcube-repair.sh`](scripts/debian/hestia-roundcube-repair.sh) | Backs up and repairs the narrow Roundcube permission case seen on HestiaCP |
 | [`scripts/ollama/configure-service.sh`](scripts/ollama/configure-service.sh) | Creates a backed-up systemd override for Ollama tuning and controlled network binding |
@@ -71,6 +72,7 @@ configuration compilation, `git diff --check`, and ShellCheck when installed.
 - [Hestia/OCI recovery](docs/hestia-oci-recovery.md)
 - [Private Ollama access](docs/ollama-private-access.md)
 - [Live GPU passthrough switch](docs/gpu-passthrough-workflow.md)
+- [NVIDIA module recovery after a kernel upgrade](docs/nvidia-kernel-recovery.md)
 
 ## Licence
 
