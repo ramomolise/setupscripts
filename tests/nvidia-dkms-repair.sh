@@ -75,6 +75,27 @@ expected=$'install-header:proxmox-headers-7.0.0-test-pve\ninstall-dkms:610.57.04
 [[ $actual == "$expected" ]] || fail "Unexpected repair sequence:\n$actual"
 
 events=()
+apply_changes=true
+headers_ready=false
+module_ready=false
+headers_present() { $headers_ready; }
+module_available() { $module_ready; }
+dkms_installed_for_kernel() { $module_ready; }
+install_header_package() {
+    events+=("install-header:$1")
+    headers_ready=true
+    module_ready=true
+}
+install_dkms_module() { fail 'DKMS was rebuilt twice after the header post-install hook succeeded.'; }
+refresh_module_metadata() { events+=("refresh:$1"); }
+print_module_details() { events+=("details:$1"); }
+
+run_recovery >/dev/null
+actual=$(printf '%s\n' "${events[@]}")
+expected=$'install-header:proxmox-headers-7.0.0-test-pve\nrefresh:7.0.0-test-pve\ndetails:7.0.0-test-pve'
+[[ $actual == "$expected" ]] || fail "Unexpected header-hook repair sequence:\n$actual"
+
+events=()
 apply_changes=false
 module_available() { return 0; }
 headers_present() { return 0; }
