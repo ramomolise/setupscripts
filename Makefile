@@ -21,3 +21,4 @@ secrets:
 
 tests:
 	@bash tests/gpu-passthrough-switch.sh
+	@bash tests/nvidia-dkms-repair.sh
