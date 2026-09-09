@@ -182,11 +182,15 @@ run_recovery() {
             die "The header tree for $kernel is still unavailable after installing $header_package."
     fi
 
-    if [[ $dkms_state == installed ]]; then
-        warn 'DKMS reports the target installed but modinfo cannot find it; rebuilding with --force.'
-        install_dkms_module "$version" "$kernel" true
-    else
-        install_dkms_module "$version" "$kernel" false
+    # Installing headers can invoke the distribution's DKMS post-install hook.
+    # Re-check instead of trying to install an already-built module again.
+    if ! module_available "$kernel"; then
+        if dkms_installed_for_kernel "$version" "$kernel"; then
+            warn 'DKMS reports the target installed but modinfo cannot find it; rebuilding with --force.'
+            install_dkms_module "$version" "$kernel" true
+        else
+            install_dkms_module "$version" "$kernel" false
+        fi
     fi
 
     refresh_module_metadata "$kernel"
