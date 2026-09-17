@@ -14,6 +14,7 @@ that job.
 | Setup | Target | Purpose |
 |---|---|---|
 | [RM Architect Qtile](setups/debian-qtile/README.md) | Debian 13 / Proxmox desktop | Qtile, Picom, Dunst, Rofi, Firefox styling, branded wallpaper, 60% keyboard shortcuts, and an optional guarded RTX/VM toggle |
+| [Debian Hyprland prototype](setups/debian-hyprland/README.md) | Debian 13 / Proxmox desktop | AMD-iGPU-only Hyprland, Dusky-inspired keys, experimental Quickshell with Waybar fallback, Lan Mouse, and the guarded RTX/VM toggle |
 | [Arch Hyprland](setups/arch-hyprland/README.md) | Native Arch Linux | Current Hyprland desktop using official repository packages and hardware-neutral defaults |
 | [Forge runtime](setups/forge-runtime/README.md) | Debian/Linux | Isolated Hermes/Ollama runtime, health checks, and optional public-profile hardening |
 

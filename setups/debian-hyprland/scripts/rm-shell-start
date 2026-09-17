@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+mode=$(cat "$HOME/.config/rm-architect/shell-mode" 2>/dev/null || printf auto)
+
+start_quickshell() {
+    if command -v qs >/dev/null 2>&1; then
+        exec qs
+    fi
+    if command -v quickshell >/dev/null 2>&1; then
+        exec quickshell
+    fi
+    return 1
+}
+
+case "$mode" in
+    quickshell)
+        start_quickshell || notify-send -u normal 'Quickshell unavailable' 'Starting the Waybar fallback.'
+        ;;
+    auto)
+        start_quickshell || true
+        ;;
+    waybar) ;;
+    *) notify-send -u normal 'Unknown shell mode' "Using Waybar instead of: $mode" ;;
+esac
+
+exec waybar

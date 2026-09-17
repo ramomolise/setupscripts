@@ -1,0 +1,9 @@
+# Debian host -> laptop, one-way topology.
+release_bind = ["KeyA", "KeyS", "KeyD", "KeyF"]
+port = 4242
+
+[[clients]]
+position = "right"
+hostname = "YOUR-LAPTOP-HOSTNAME"
+ips = ["YOUR-LAPTOP-LAN-IP"]
+activate_on_startup = true
