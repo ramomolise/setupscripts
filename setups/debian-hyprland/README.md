@@ -108,10 +108,14 @@ machines should use the same Lan Mouse release.
 | `Alt + Space` | Rofi application launcher |
 | `Ctrl + Shift + Space` | Shortcut reference |
 | `Super + C` | Close window |
-| `Super + H/J/K/L` | Move focus |
-| `Super + Shift + H/J/K/L` | Move window |
-| `Super + 1…9` | Switch workspace |
-| `Super + Shift + 1…9` | Send window to workspace |
+| `Super + A/D` | Toggle fullscreen / floating |
+| `Alt + Tab` | Cycle windows |
+| `Super + Tab` | Return to previous workspace |
+| `Super + Arrow keys` | Move focus |
+| `Super + Shift + Arrow keys` | Move window |
+| `Super + 1…9/0` | Switch to workspace 1–10 |
+| `Super + Shift + 1…9/0` | Send window to workspace 1–10 |
+| `Super + mouse-left/right` | Move / resize floating window |
 | `Super + G` | Steam using NVIDIA PRIME |
 | `Super + Shift + G` | Guarded RTX/VM toggle |
 | `Super + L` | Lock session |

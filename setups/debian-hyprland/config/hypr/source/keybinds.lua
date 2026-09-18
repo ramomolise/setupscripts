@@ -2,10 +2,18 @@ local terminal = "foot"
 local browser = "firefox-esr"
 local files = "thunar"
 
-local function command(keys, value, description, flags)
+local registered = {}
+
+local function bind(keys, dispatcher, description, flags)
+    assert(not registered[keys], "duplicate keybinding: " .. keys)
+    registered[keys] = true
     local options = flags or {}
     options.description = description
-    hl.bind(keys, hl.dsp.exec_cmd(value), options)
+    hl.bind(keys, dispatcher, options)
+end
+
+local function command(keys, value, description, flags)
+    bind(keys, hl.dsp.exec_cmd(value), description, flags)
 end
 
 -- Dusky-inspired launch layer.
@@ -16,24 +24,31 @@ command("ALT + SPACE", "pkill rofi; rofi -show drun", "Application launcher")
 command("CTRL + SHIFT + SPACE", "rm-keybinds", "Show keybindings")
 
 -- Window and session controls.
-command("SUPER + C", "hyprctl dispatch killactive", "Close active window")
-command("SUPER + SHIFT + Q", "hyprctl dispatch exit", "Exit Hyprland")
-command("SUPER + F", "hyprctl dispatch fullscreen 1", "Toggle fullscreen")
-command("SUPER + V", "hyprctl dispatch togglefloating", "Toggle floating")
+bind("SUPER + C", hl.dsp.window.close(), "Close active window")
+bind("SUPER + SHIFT + Q", hl.dsp.exit(), "Exit Hyprland")
+bind("SUPER + A", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }), "Toggle fullscreen")
+bind("SUPER + D", hl.dsp.window.float({ action = "toggle" }), "Toggle floating")
+bind("ALT + TAB", hl.dsp.window.cycle_next(), "Cycle windows")
 command("SUPER + L", "hyprlock", "Lock session")
 command("SUPER + SHIFT + R", "hyprctl reload", "Reload Hyprland")
 
 for _, direction in ipairs({
-    { "H", "l" }, { "J", "d" }, { "K", "u" }, { "L", "r" },
+    { "LEFT", "l" }, { "DOWN", "d" }, { "UP", "u" }, { "RIGHT", "r" },
 }) do
-    command("SUPER + " .. direction[1], "hyprctl dispatch movefocus " .. direction[2], "Move focus")
-    command("SUPER + SHIFT + " .. direction[1], "hyprctl dispatch movewindow " .. direction[2], "Move window")
+    bind("SUPER + " .. direction[1], hl.dsp.focus({ direction = direction[2] }), "Move focus", { repeating = true })
+    bind("SUPER + SHIFT + " .. direction[1], hl.dsp.window.move({ direction = direction[2] }), "Move tiled window", { repeating = true })
 end
 
-for workspace = 1, 9 do
-    command("SUPER + " .. workspace, "hyprctl dispatch workspace " .. workspace, "Switch workspace")
-    command("SUPER + SHIFT + " .. workspace, "hyprctl dispatch movetoworkspace " .. workspace, "Move window to workspace")
+for key = 1, 10 do
+    local workspace = key == 10 and 10 or key
+    local key_name = key == 10 and "0" or tostring(key)
+    bind("SUPER + " .. key_name, hl.dsp.focus({ workspace = workspace }), "Switch to workspace " .. workspace)
+    bind("SUPER + SHIFT + " .. key_name, hl.dsp.window.move({ workspace = workspace }), "Move window to workspace " .. workspace)
 end
+
+bind("SUPER + TAB", hl.dsp.focus({ workspace = "previous" }), "Switch to previous workspace")
+bind("SUPER + mouse:272", hl.dsp.window.drag(), "Move floating window", { mouse = true })
+bind("SUPER + mouse:273", hl.dsp.window.resize(), "Resize floating window", { mouse = true })
 
 -- Existing guarded passthrough workflow. Both actions fail closed when the
 -- system component or NVIDIA driver is unavailable.

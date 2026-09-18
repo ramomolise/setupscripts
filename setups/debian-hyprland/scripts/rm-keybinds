@@ -8,13 +8,17 @@ Super + E                 Files
 Alt + Space               Application launcher
 Ctrl + Shift + Space      This key list
 Super + C                 Close window
-Super + F                 Fullscreen
-Super + V                 Toggle floating
+Super + A                 Toggle fullscreen
+Super + D                 Toggle floating
+Alt + Tab                 Cycle windows
+Super + Tab               Previous workspace
 Super + L                 Lock
-Super + H/J/K/L           Move focus
-Super + Shift + H/J/K/L   Move window
-Super + 1…9               Select workspace
-Super + Shift + 1…9       Move window to workspace
+Super + Arrow keys        Move focus
+Super + Shift + Arrows    Move window
+Super + 1…9/0             Select workspace 1–10
+Super + Shift + 1…9/0     Move window to workspace 1–10
+Super + mouse-left        Move floating window
+Super + mouse-right       Resize floating window
 Super + G                 Steam on NVIDIA
 Super + Shift + G         Toggle RTX host/VM mode
 Super + Shift + R         Reload Hyprland
