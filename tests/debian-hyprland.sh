@@ -76,6 +76,18 @@ grep -Fq 'BindsTo=graphical-session.target' "$profile/config/systemd/user/lan-mo
 grep -Fq 'c43d211ec1af3eaea0cd585ac5c415776000355c3fcb9742fa2513f32dab55ba' "$profile/scripts/install-lan-mouse.sh"
 grep -Fq 'Qtile remains installed' "$profile/install.sh"
 
+capture="$profile/scripts/rm-hypr-input-capture"
+grep -Fq 'hl.exec_cmd("rm-hypr-input-capture")' "$profile/config/hypr/source/autostart.lua"
+grep -Fq 'hypr-input-capture.armed' "$capture"
+grep -Fq 'hyprctl -j devices' "$capture"
+grep -Fq 'loginctl seat-status seat0' "$capture"
+grep -Fq 'journalctl -b -k' "$capture"
+grep -Fq 'journalctl --user -b -u lan-mouse.service' "$capture"
+if grep -Eqi 'libinput (debug-events|record)|evtest|udevadm (trigger|control)|/sys/bus/usb/drivers/.*/(unbind|bind)' "$capture"; then
+    printf '%s\n' 'Input capture must remain read-only and must not grab or reset devices.' >&2
+    exit 1
+fi
+
 if grep -Fq 'rgba(8455b8ff) rgba(c7c4ceff) 45deg' "$profile/config/hypr/source/appearance.lua"; then
     printf '%s\n' 'Unsupported Hyprland active-border gradient found.' >&2
     exit 1

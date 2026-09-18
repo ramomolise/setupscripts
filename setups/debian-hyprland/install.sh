@@ -157,6 +157,7 @@ install -d "$HOME/.config/rm-architect" "$HOME/.local/bin" "$HOME/Pictures/Scree
 printf '%s\n' "$shell_mode" >"$HOME/.config/rm-architect/shell-mode"
 install -m 0755 "$script_dir/scripts/rm-shell-start" "$HOME/.local/bin/rm-shell-start"
 install -m 0755 "$script_dir/scripts/rm-keybinds" "$HOME/.local/bin/rm-keybinds"
+install -m 0755 "$script_dir/scripts/rm-hypr-input-capture" "$HOME/.local/bin/rm-hypr-input-capture"
 
 wallpaper_dir="$HOME/.local/share/backgrounds"
 wallpaper="$wallpaper_dir/rm-architect.png"
