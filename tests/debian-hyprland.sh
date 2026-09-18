@@ -11,4 +11,14 @@ grep -Fq 'BindsTo=graphical-session.target' "$profile/config/systemd/user/lan-mo
 grep -Fq 'c43d211ec1af3eaea0cd585ac5c415776000355c3fcb9742fa2513f32dab55ba' "$profile/scripts/install-lan-mouse.sh"
 grep -Fq 'Qtile remains installed' "$profile/install.sh"
 
+if grep -Fq 'rgba(8455b8ff) rgba(c7c4ceff) 45deg' "$profile/config/hypr/source/appearance.lua"; then
+    printf '%s\n' 'Unsupported Hyprland active-border gradient found.' >&2
+    exit 1
+fi
+
+if grep -Eq '^[[:space:]]*pseudotile[[:space:]]*=' "$profile/config/hypr/source/appearance.lua"; then
+    printf '%s\n' 'Unsupported Hyprland dwindle.pseudotile setting found.' >&2
+    exit 1
+fi
+
 printf '%s\n' 'Debian Hyprland profile checks passed.'

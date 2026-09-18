@@ -3,7 +3,7 @@ hl.config({
         gaps_in = 5,
         gaps_out = 12,
         border_size = 2,
-        ["col.active_border"] = "rgba(8455b8ff) rgba(c7c4ceff) 45deg",
+        ["col.active_border"] = "rgba(8455b8ff)",
         ["col.inactive_border"] = "rgba(3b3944aa)",
         resize_on_border = true,
         layout = "dwindle",
@@ -29,7 +29,6 @@ hl.config({
         enabled = true,
     },
     dwindle = {
-        pseudotile = true,
         preserve_split = true,
     },
     misc = {
