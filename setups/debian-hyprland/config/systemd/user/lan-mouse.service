@@ -1,0 +1,12 @@
+[Unit]
+Description=Lan Mouse
+After=graphical-session.target
+BindsTo=graphical-session.target
+
+[Service]
+ExecStart=/usr/local/bin/lan-mouse daemon
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

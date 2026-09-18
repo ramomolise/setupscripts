@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+cat <<'EOF' | rofi -dmenu -i -p 'Hyprland keys' >/dev/null
+Super + Q                 Terminal
+Super + W                 Browser
+Super + E                 Files
+Alt + Space               Application launcher
+Ctrl + Shift + Space      This key list
+Super + C                 Close window
+Super + A                 Toggle fullscreen
+Super + D                 Toggle floating
+Alt + Tab                 Cycle windows
+Super + Tab               Previous workspace
+Super + Arrow keys        Move focus
+Super + Shift + Arrows    Move window
+Super + 1…9/0             Select workspace 1–10
+Super + Shift + 1…9/0     Move window to workspace 1–10
+Super + mouse-left        Move floating window
+Super + mouse-right       Resize floating window
+Super + G                 Steam on NVIDIA
+Super + Shift + G         Toggle RTX host/VM mode
+Super + Shift + R         Reload Hyprland
+Print                     Region screenshot
+EOF
