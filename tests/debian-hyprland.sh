@@ -37,12 +37,13 @@ shortcuts += [f"SUPER + SHIFT + {key}" for key in ("LEFT", "DOWN", "UP", "RIGHT"
 duplicates = sorted({key for key in shortcuts if shortcuts.count(key) > 1})
 if duplicates:
     raise SystemExit("duplicate/conflicting shortcuts: " + ", ".join(duplicates))
+if "SUPER + L" in shortcuts:
+    raise SystemExit("server profile must not bind Super+L")
 
 required = {
     "SUPER + C", "SUPER + A", "SUPER + D", "ALT + TAB", "SUPER + TAB",
     "SUPER + mouse:272", "SUPER + mouse:273", "SUPER + Q", "SUPER + W",
     "SUPER + E", "ALT + SPACE", "CTRL + SHIFT + SPACE", "SUPER + SHIFT + G",
-    "SUPER + L",
 }
 required.update(f"SUPER + {key}" for key in ("LEFT", "DOWN", "UP", "RIGHT", *"1234567890"))
 required.update(f"SUPER + SHIFT + {key}" for key in ("LEFT", "DOWN", "UP", "RIGHT", *"1234567890"))
@@ -50,6 +51,27 @@ missing = sorted(required - set(shortcuts))
 if missing:
     raise SystemExit("missing shortcuts: " + ", ".join(missing))
 PY
+
+if grep -Eq '^(bind|command)\("SUPER \+ L"' "$profile/config/hypr/source/keybinds.lua"; then
+    printf '%s\n' 'Server profile must not bind Super+L.' >&2
+    exit 1
+fi
+
+if grep -Rqi 'hyprlock' "$profile"; then
+    printf '%s\n' 'Server profile contains a Hyprlock execution path.' >&2
+    exit 1
+fi
+
+if grep -RqiE 'loginctl[[:space:]]+lock-session|lock-session|session_lock' "$profile"; then
+    printf '%s\n' 'Server profile contains an automatic session-lock command.' >&2
+    exit 1
+fi
+
+if grep -RqiE 'hypridle|systemctl[^[:cntrl:]]+(enable|start)[^[:cntrl:]]+[^[:space:]]*idle[^[:space:]]*\.service' "$profile"; then
+    printf '%s\n' 'Server profile contains Hypridle autostart or an enabled idle service.' >&2
+    exit 1
+fi
+
 grep -Fq 'BindsTo=graphical-session.target' "$profile/config/systemd/user/lan-mouse.service"
 grep -Fq 'c43d211ec1af3eaea0cd585ac5c415776000355c3fcb9742fa2513f32dab55ba' "$profile/scripts/install-lan-mouse.sh"
 grep -Fq 'Qtile remains installed' "$profile/install.sh"

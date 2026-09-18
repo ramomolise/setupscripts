@@ -118,5 +118,4 @@ machines should use the same Lan Mouse release.
 | `Super + mouse-left/right` | Move / resize floating window |
 | `Super + G` | Steam using NVIDIA PRIME |
 | `Super + Shift + G` | Guarded RTX/VM toggle |
-| `Super + L` | Lock session |
 | `Print` | Region screenshot |

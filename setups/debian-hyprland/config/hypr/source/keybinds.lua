@@ -29,7 +29,6 @@ bind("SUPER + SHIFT + Q", hl.dsp.exit(), "Exit Hyprland")
 bind("SUPER + A", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }), "Toggle fullscreen")
 bind("SUPER + D", hl.dsp.window.float({ action = "toggle" }), "Toggle floating")
 bind("ALT + TAB", hl.dsp.window.cycle_next(), "Cycle windows")
-command("SUPER + L", "hyprlock", "Lock session")
 command("SUPER + SHIFT + R", "hyprctl reload", "Reload Hyprland")
 
 for _, direction in ipairs({

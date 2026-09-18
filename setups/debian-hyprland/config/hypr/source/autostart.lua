@@ -6,7 +6,6 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("dunst")
     hl.exec_cmd("nm-applet --indicator")
     hl.exec_cmd("hyprpaper")
-    hl.exec_cmd("hypridle")
     hl.exec_cmd([[sh -lc 'agent=/usr/lib/x86_64-linux-gnu/ukui-polkit/polkit-ukui-authentication-agent-1; test ! -x "$agent" || exec "$agent"']])
 end)
 
