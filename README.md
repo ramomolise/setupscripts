@@ -68,6 +68,7 @@ configuration compilation, `git diff --check`, and ShellCheck when installed.
 
 ## Documentation and recovery checklists
 
+- [T440p media appliance system design](docs/t440p-media-appliance-system-design.md)
 - [Hestia/OCI recovery](docs/hestia-oci-recovery.md)
 - [Private Ollama access](docs/ollama-private-access.md)
 - [Live GPU passthrough switch](docs/gpu-passthrough-workflow.md)
