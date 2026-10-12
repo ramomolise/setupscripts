@@ -1,0 +1,4 @@
+# Debian 13 packages installed from trixie-backports.
+hyprland
+hyprpaper
+xdg-desktop-portal-hyprland
