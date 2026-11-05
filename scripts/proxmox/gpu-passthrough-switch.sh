@@ -16,12 +16,16 @@ log() {
     logger -t gpu-passthrough-switch -- "$*" 2>/dev/null || true
 }
 
-die() {
+report_error() {
     printf 'Error: %s\n' "$*" >&2
     if ((EUID == 0)); then
         printf '%s\n' "$*" >"$LAST_ERROR_FILE" || true
         chmod 0644 "$LAST_ERROR_FILE" 2>/dev/null || true
     fi
+}
+
+die() {
+    report_error "$*"
     exit 1
 }
 
@@ -131,7 +135,8 @@ unbind_device() {
     local pci=$1 path
     path=$(device_path "$pci")
     if [[ -L $path/driver ]]; then
-        printf '%s' "$pci" >"$path/driver/unbind"
+        printf '%s' "$pci" >"$path/driver/unbind" || \
+            die "PCI device $pci could not be detached from its current driver."
     fi
 }
 
@@ -145,9 +150,12 @@ bind_device() {
     fi
 
     unbind_device "$pci"
-    printf '%s' "$target_driver" >"$path/driver_override"
-    modprobe "$target_driver"
-    printf '%s' "$pci" >/sys/bus/pci/drivers_probe
+    printf '%s' "$target_driver" >"$path/driver_override" || \
+        die "Could not set driver_override=$target_driver for PCI device $pci."
+    modprobe "$target_driver" || \
+        die "Kernel module $target_driver could not be loaded for PCI device $pci."
+    printf '%s' "$pci" >/sys/bus/pci/drivers_probe || \
+        die "The kernel refused to probe PCI device $pci with $target_driver."
 
     for ((attempt = 0; attempt < 20; attempt++)); do
         [[ $(current_driver "$pci") == "$target_driver" ]] && return 0
@@ -217,13 +225,59 @@ stop_nvidia_background_services() {
         nvidia-powerd.service >/dev/null 2>&1 || true
 }
 
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+running_kernel() {
+    uname -r
+}
+
+module_metadata_available() {
+    modinfo -k "$1" "$2" >/dev/null 2>&1
+}
+
+module_load_resolves() {
+    modprobe --dry-run --quiet "$1" >/dev/null 2>&1
+}
+
+preflight_host_driver() {
+    local kernel module
+    local modules=(nvidia nvidia_modeset nvidia_drm nvidia_uvm)
+
+    kernel=$(running_kernel)
+    command_exists modinfo || {
+        report_error 'modinfo is required to validate the NVIDIA kernel modules.'
+        return 1
+    }
+    command_exists modprobe || {
+        report_error 'modprobe is required to validate the NVIDIA kernel modules.'
+        return 1
+    }
+    command_exists nvidia-smi || {
+        report_error 'nvidia-smi is not installed; the VM and VFIO ownership were left unchanged.'
+        return 1
+    }
+
+    for module in "${modules[@]}"; do
+        if ! module_metadata_available "$kernel" "$module"; then
+            report_error "NVIDIA module $module is unavailable for the running kernel $kernel. Install its matching kernel headers and rebuild NVIDIA DKMS before retrying; the VM and VFIO ownership were left unchanged."
+            return 1
+        fi
+        if ! module_load_resolves "$module"; then
+            report_error "NVIDIA module $module cannot be resolved for the running kernel $kernel. Repair the NVIDIA module stack before retrying; the VM and VFIO ownership were left unchanged."
+            return 1
+        fi
+    done
+}
+
 bind_to_host() {
     log "Binding $GPU_PCI to nvidia and $AUDIO_PCI to snd_hda_intel."
     bind_device "$GPU_PCI" nvidia
     bind_device "$AUDIO_PCI" snd_hda_intel
-    modprobe nvidia_modeset
-    modprobe nvidia_drm modeset=1
-    modprobe nvidia_uvm
+    modprobe nvidia_modeset || die 'The nvidia_modeset module could not be loaded.'
+    modprobe nvidia_drm modeset=1 || die 'The nvidia_drm module could not be loaded.'
+    modprobe nvidia_uvm || die 'The nvidia_uvm module could not be loaded.'
     if command -v udevadm >/dev/null 2>&1; then
         udevadm settle || true
     fi
@@ -232,6 +286,20 @@ bind_to_host() {
     fi
     command -v nvidia-smi >/dev/null 2>&1 || die 'nvidia-smi is not installed.'
     nvidia-smi >/dev/null || die 'The NVIDIA driver loaded, but nvidia-smi could not initialise the GPU.'
+}
+
+rollback_failed_host_switch() {
+    local original_error
+    original_error=$(cat "$LAST_ERROR_FILE" 2>/dev/null || true)
+    [[ -n $original_error ]] || original_error='the NVIDIA host binding did not complete'
+
+    log 'Host binding failed; attempting a fail-closed rollback to VFIO.'
+    bind_to_vfio
+    start_vm
+    start_display_manager
+    write_state vm
+    report_error "Host switch failed: $original_error. Rollback completed; the GPU is back on VFIO and VM $VMID is running."
+    log "Rollback completed; the GPU is back on VFIO and VM $VMID is running."
 }
 
 bind_to_vfio() {
@@ -248,10 +316,16 @@ bind_to_vfio() {
 }
 
 switch_to_host() {
+    if ! preflight_host_driver; then
+        return 1
+    fi
     write_state switching-host
     shutdown_vm
     stop_display_manager
-    bind_to_host
+    if ! (bind_to_host); then
+        rollback_failed_host_switch
+        return 1
+    fi
     start_display_manager
     write_state host
     log 'GPU mode is now host. Log in again and launch Steam with steam-nvidia.'
